@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%232a78d6%22/%3E%3C/svg%3E">
+<title>AI E-Learning Platform — personalised study recommendations</title>
+<style>
+:root{color-scheme:light;--bg:#f4f3ef;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--ink3:#7a7974;--line:#e2e0d8;--grid:#ecebe5;
+--s1:#2a78d6;--neutral:#a9a8a1;--warn-bg:#fff4dc;--warn-ink:#7a4d00;--good:#1f7a3a;--bad:#b3261e;--radius:10px}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--ink3:#97968e;--line:#2e2e2b;--grid:#262624;
+--s1:#3987e5;--neutral:#6b6a64;--warn-bg:#3a2c0c;--warn-ink:#f3cf83;--good:#6fcf8a;--bad:#f2867e}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:28px 24px 8px;max-width:1100px;margin:auto}h1{margin:0;font-size:24px}h2{font-size:18px;margin:0 0 10px}h3{font-size:15px;margin:16px 0 6px}
+.sub{color:var(--ink2);margin:4px 0 0}nav{max-width:1100px;margin:14px auto 0;padding:0 24px;display:flex;gap:6px;flex-wrap:wrap}
+nav button{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit}
+nav button[aria-selected=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+main{max-width:1100px;margin:auto;padding:16px 24px 60px}.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.banner{background:var(--warn-bg);color:var(--warn-ink);border-radius:var(--radius);padding:10px 14px;margin:14px auto 0;width:calc(100% - 48px);max-width:1052px;font-size:14px}
+select,input,textarea{font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:100%}
+.btn{border:0;border-radius:8px;padding:9px 14px;font:inherit;cursor:pointer;background:var(--s1);color:#fff}.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.muted{color:var(--ink3);font-size:13px}
+.bar{display:grid;grid-template-columns:minmax(120px,240px) 1fr 54px;gap:10px;align-items:center;padding:4px 0;font-size:14px;cursor:pointer}
+.bar .track{position:relative;height:12px;background:var(--grid);border-radius:4px}.bar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0}
+.bar .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bar.sel .name{font-weight:600}.num{font-variant-numeric:tabular-nums;text-align:right}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);margin-left:4px}
+.tag.ph{background:var(--warn-bg);color:var(--warn-ink);border-color:transparent}
+ol.recs{padding-left:20px;margin:0}ol.recs li{margin-bottom:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}tr.ours td{font-weight:600}.scroll{overflow-x:auto}
+.hist{max-height:180px;overflow:auto;font-size:13px;color:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin-top:10px}
+.contrib{display:grid;grid-template-columns:1fr 160px 60px;gap:8px;align-items:center;font-size:13.5px;padding:2px 0}
+.cbar{position:relative;height:10px}.cbar .zero{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--ink3)}
+.cbar .v{position:absolute;top:0;bottom:0;border-radius:3px}.pos{background:var(--s1)}.neg{background:var(--neutral)}
+.chart{position:relative}.chart .lbl{display:grid;grid-template-columns:230px 1fr 130px;gap:10px;align-items:center;padding:3px 0;font-size:13.5px}
+.chart .plot{position:relative;height:16px}.chart .b{position:absolute;top:2px;height:12px;border-radius:0 4px 4px 0}.chart .ci{position:absolute;top:7px;height:2px;background:var(--ink)}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);padding:6px 9px;border-radius:6px;font-size:12.5px;display:none;z-index:9;max-width:280px}
+img.fig{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}ul.lim li{margin-bottom:6px}
+.qbox{border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:12px;min-height:150px}
+.qtext{font-size:17px;margin:0 0 12px}.qbox input{max-width:220px}.choices{display:flex;gap:8px;flex-wrap:wrap}
+.fb{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:14px}.fb.ok{background:color-mix(in srgb,var(--good) 14%,transparent)}.fb.no{background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.lab{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;margin-left:6px;font-weight:600}.lab.y{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}.lab.n{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
+.bar .th{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}ol.plan{padding-left:20px;margin:6px 0}ol.plan li{margin-bottom:4px}.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.stat div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}.stat b{font-size:20px;display:block}
+.note{font-size:13.5px;color:var(--ink2);margin:4px 0 6px}.hidden{display:none}footer{max-width:1100px;margin:auto;padding:0 24px 40px;color:var(--ink3);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>AI E-Learning Platform</h1>
+  <p class="sub">Suggests what to study next from a student's answer history. Research project by Lakshya Pandey, Vinayak Kumar and Aaryan Madhok.</p>
+</header>
+<div class="banner" role="note"><strong>How to use:</strong> answer the questions below. After every answer a <b>classifier</b> predicts, for each topic, whether your next answer will be correct, and labels the topic <b>Mastered</b> or <b>Not yet</b>. <b>A* search</b> then plans the shortest study path.
+Mastery is the model's <em>estimate</em>, not a test score, and the "what if" numbers are not causal. Everything runs in your browser; nothing is sent anywhere.
+See <a href="#" data-go="how">How it works</a> for results and limitations.</div>
+<nav role="tablist">
+  <button role="tab" data-tab="practice" aria-selected="true">Practice</button>
+  <button role="tab" data-tab="load" aria-selected="false">Load a history</button>
+  <button role="tab" data-tab="how" aria-selected="false">How it works</button>
+</nav>
+<main>
+<section id="tab-practice">
+  <div class="grid">
+    <div class="card">
+      <h2>1. Answer a question</h2>
+      <label class="muted" for="quizTopic">Topic</label>
+      <div class="row" style="margin-top:4px;flex-wrap:nowrap">
+        <select id="quizTopic"></select>
+        <button class="btn alt" id="btnNewQ" style="white-space:nowrap">New question</button>
+      </div>
+      <div id="qbox" class="qbox" aria-live="polite"></div>
+      <div class="row">
+        <button class="btn alt" id="btnUndo">Undo last answer</button>
+        <button class="btn alt" id="btnReset">Clear history</button>
+        <button class="btn alt" id="btnDemo">Load SIMULATED demo</button>
+      </div>
+      <div class="hist" id="hist"></div>
+    </div>
+    <div class="card">
+      <h2>2. Recommended next</h2>
+      <div id="recs"></div>
+      <h3>Why? <span class="muted" id="whyTopic"></span></h3>
+      <div id="why"></div>
+      <h3>What if your next answer on this topic is…</h3>
+      <div id="whatif" class="muted"></div>
+    </div>
+  </div>
+  <div class="card" id="planCard">
+    <h2>3. Shortest study path <span class="muted">(A* search)</span></h2>
+    <p class="muted" style="margin:0">A* finds the fewest practice questions after which the classifier labels every weak topic you have practised as <b>Mastered</b>. Each step = answer one question; the plan assumes the answers are correct, so it is the <i>minimum</i>.</p>
+    <div class="row"><label for="theta" class="muted">Mastered when the chance of a correct answer is at least</label>
+      <select id="theta" style="width:auto"><option value="0.6">60%</option><option value="0.7" selected>70%</option><option value="0.8">80%</option></select></div>
+    <div id="plan"></div>
+  </div>
+  <div class="card">
+    <h2>4. Mastery per topic</h2>
+    <p class="muted" style="margin-top:-4px">The classifier's predicted chance of answering an average question of the topic correctly next. Click a topic to see why.</p>
+    <div class="row" style="margin-top:0"><label><input type="checkbox" id="showAll" style="width:auto"> show all topics (not only practised ones)</label></div>
+    <div id="bars"></div>
+  </div>
+</section>
+
+<section id="tab-load" class="hidden">
+  <div class="card">
+    <h2>Load a history</h2>
+    <p>Paste one answer per line as <code>topic,correct</code>, oldest first. <code>topic</code> is a topic number (1–<span id="nTopics"></span>) or its exact name; <code>correct</code> is 1 or 0.</p>
+    <textarea id="csv" rows="10" placeholder="Proportion,1&#10;Proportion,0&#10;12,1"></textarea>
+    <div class="row"><button class="btn" id="btnLoad">Load and analyse</button><span id="loadMsg" class="muted"></span></div>
+    <p class="muted">Everything stays in your browser.</p>
+  </div>
+</section>
+
+<section id="tab-how" class="hidden"><div id="how"></div></section>
+</main>
+<footer>Data: ASSISTments 2009–2010 skill builder data (corrected version), <a href="https://sites.google.com/site/assistmentsdata/home/2009-2010-assistment-data/skill-builder-data-2009-2010">official page</a>. We acknowledge the ASSISTments TestBed. Code is public with the paper.</footer>
+<div class="tip" id="tip"></div>
+
+<script src="model.js"></script>
+<script src="questions.js"></script>
+<script src="astar.js"></script>
+<script>
+let M, R, hist = [], selected = null;
+const $ = id => document.getElementById(id);
+const fmt = (x, d = 3) => (x == null || isNaN(x)) ? "—" : Number(x).toFixed(d);
+const pct = x => Math.round(100 * x) + "%";
+const FEAT = ["Your correct answers on this topic", "Your wrong answers on this topic", "Your overall success rate",
+  "How many questions you have answered", "Your last 3 answers on this topic", "You have not practised this topic yet"];
+
+function tab(t) {
+  for (const b of document.querySelectorAll("nav button")) b.setAttribute("aria-selected", b.dataset.tab === t);
+  for (const s of ["practice", "load", "how"]) $("tab-" + s).classList.toggle("hidden", s !== t);
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => tab(b.dataset.tab));
+document.querySelectorAll("[data-go]").forEach(a => a.onclick = e => { e.preventDefault(); tab(a.dataset.go); });
+
+const tip = $("tip");
+function showTip(e, html) { tip.innerHTML = html; tip.style.display = "block"; tip.style.left = (e.clientX + 12) + "px"; tip.style.top = (e.clientY + 12) + "px"; }
+function hideTip() { tip.style.display = "none"; }
+
+let current = null, answered = false;
+function quizOptions() {
+  const opts = Quiz.quizTopics.map(k => M.topics[k - 1]).sort((a, b) => a.name.localeCompare(b.name));
+  $("quizTopic").innerHTML = '<option value="rec">★ Recommended for me (weakest topic)</option>' + opts.map(t => `<option value="${t.idx}">${t.name}</option>`).join("");
+}
+function recommendedTopic() {
+  const m = compute(hist).mastery, done = new Set(hist.map(x => x[0]));
+  const pool = Quiz.quizTopics.filter(k => done.has(k));
+  const cand = pool.length ? pool : Quiz.quizTopics;
+  if (!pool.length) return cand[Math.floor(Math.random() * cand.length)];
+  return cand.sort((a, b) => m[a - 1] - m[b - 1])[0];
+}
+function newQuestion(topic) {
+  const sel = $("quizTopic").value, k = topic || (sel === "rec" ? recommendedTopic() : +sel);
+  current = Quiz.generate(k); answered = false; selected = k;
+  const t = M.topics[k - 1].name;
+  $("qbox").innerHTML = `<div class="muted">${t}${sel === "rec" && !topic ? " · recommended" : ""}</div><p class="qtext">${current.q}</p>` +
+    (current.type === "choice" ? `<div class="choices">${current.choices.map(c => `<button class="btn alt ch">${c}</button>`).join("")}</div>`
+      : `<div class="row" style="margin-top:0"><input id="ans" placeholder="${current.type === "fraction" ? "e.g. 3/4" : "your answer"}" autocomplete="off"><button class="btn" id="btnSubmit">Check</button></div>`) +
+    `<div id="fb"></div>`;
+  if (current.type === "choice") document.querySelectorAll(".ch").forEach(b => b.onclick = () => submit(b.textContent));
+  else { $("btnSubmit").onclick = () => submit($("ans").value); $("ans").onkeydown = e => { if (e.key === "Enter") submit($("ans").value); }; $("ans").focus(); }
+  render();
+}
+function submit(input) {
+  if (!current || answered) return;
+  const ok = Quiz.check(current, input);
+  if (ok === null) { $("fb").innerHTML = `<div class="fb no">Could not read that answer. ${current.type === "fraction" ? "Type a fraction like 3/4." : "Type a number like 12 or 0.5."}</div>`; return; }
+  answered = true;
+  const before = compute(hist).mastery[current.topic - 1];
+  hist.push([current.topic, ok ? 1 : 0]);
+  const after = compute(hist).mastery[current.topic - 1];
+  $("fb").innerHTML = `<div class="fb ${ok ? "ok" : "no"}"><b>${ok ? "✓ Correct!" : "✗ Not quite."}</b> ${ok ? "" : `The answer is <b>${current.answerText}</b>.`}<br>${current.sol}
+    <br><span class="muted">Mastery for this topic: ${pct(before)} → ${pct(after)}</span></div>
+    <div class="row"><button class="btn" id="btnNext">Next question →</button></div>`;
+  $("btnNext").onclick = () => newQuestion();
+  document.querySelectorAll(".ch").forEach(b => b.disabled = true); if ($("ans")) $("ans").disabled = true;
+  render();
+}
+const theta = () => +$("theta").value;
+const labelOf = p => p >= theta() ? '<span class="lab y">Mastered</span>' : '<span class="lab n">Not yet</span>';
+function plan() {
+  const sk = hist.map(x => x[0]), co = hist.map(x => x[1]), nm = k => M.topics[k - 1].name;
+  if (!hist.length) { $("plan").innerHTML = '<p class="muted">Answer a few questions to get a study path.</p>'; return; }
+  const P = new AStarPlanner.Planner(M, theta()), a = P.astar(sk, co), b = P.bfs(sk, co);
+  if (a.status === "nothing to plan") { $("plan").innerHTML = `<p>Every topic you have practised is already labelled <b>Mastered</b> at ${pct(theta())}. Try a new topic.</p>`; return; }
+  if (a.status !== "ok") { $("plan").innerHTML = `<p>No plan of ${AStarPlanner.MAX_TOTAL} questions or fewer makes all of <b>${a.targets.map(nm).join(", ")}</b> Mastered at ${pct(theta())}. Try a lower threshold, or practise these topics and ask again.</p>`; return; }
+  $("plan").innerHTML = `<p style="margin:10px 0 0">Weak topics (Not yet): ${a.targets.map((k, i) => `<b>${nm(k)}</b> ${pct(a.startProb[i])}`).join(" · ")}</p>
+    <ol class="plan">${a.plan.map(([k, c]) => `<li>Answer <b>${c}</b> question${c > 1 ? "s" : ""} correctly on <b>${nm(k)}</b>${Quiz.topics[k] ? ` <button class="btn alt prac" data-k="${k}" style="padding:3px 9px;font-size:13px">Practise</button>` : ""}</li>`).join("")}</ol>
+    <p style="margin:4px 0">Shortest path: <b>${a.cost} question${a.cost > 1 ? "s" : ""}</b>. After it: ${a.targets.map((k, i) => `${nm(k)} ${pct(a.endProb[i])}`).join(" · ")}, all Mastered.</p>
+    <div class="stat"><div><span class="muted">A* search (with heuristic)</span><b>${a.expanded}</b><span class="muted">states expanded</span></div>
+    <div><span class="muted">Breadth-first search (no heuristic)</span><b>${b.expanded}</b><span class="muted">states expanded, same ${b.cost}-question answer</span></div></div>`;
+}
+function compute(h) { return KTModel.mastery(M, h.map(x => x[0]), h.map(x => x[1])); }
+
+function render() {
+  const res = compute(hist), m = res.mastery;
+  const counts = {}; hist.forEach(([k]) => counts[k] = (counts[k] || 0) + 1);
+  $("hist").innerHTML = hist.length ? hist.map(([k, c], i) => `${i + 1}. ${c ? "✓" : "✗"} ${M.topics[k - 1].name}`).reverse().join("<br>") : "No answers yet.";
+  const practised = Object.keys(counts).map(Number);
+  const shown = ($("showAll").checked ? M.topics.map(t => t.idx) : practised).sort((a, b) => m[a - 1] - m[b - 1]);
+  $("bars").innerHTML = shown.length ? shown.map(k => `<div class="bar${k === selected ? " sel" : ""}" data-k="${k}">
+      <span class="name" title="${M.topics[k - 1].name}">${M.topics[k - 1].name}${M.topics[k - 1].low_data ? '<span class="tag">low data</span>' : ""}</span>
+      <span class="track"><span class="fill" style="width:${100 * m[k - 1]}%"></span><span class="th" style="left:${100 * theta()}%"></span></span><span class="num">${pct(m[k - 1])}</span></div>`).join("")
+    : '<p class="muted">Answer a few questions to see mastery.</p>';
+  document.querySelectorAll(".bar").forEach(el => {
+    const k = +el.dataset.k;
+    el.onclick = () => { selected = k; render(); };
+    el.onmousemove = e => showTip(e, `<b>${M.topics[k - 1].name}</b><br>mastery ${fmt(m[k - 1])} (${m[k - 1] >= theta() ? "Mastered" : "Not yet"})<br>your answers: ${counts[k] || 0}<br>training answers: ${M.topics[k - 1].train_answers}`);
+    el.onmouseleave = hideTip;
+  });
+  // recommendations: practised topics, lowest mastery first, top 3 (same rule as Phase 5)
+  const recs = practised.sort((a, b) => m[a - 1] - m[b - 1]).slice(0, 3);
+  $("recs").innerHTML = recs.length ? "<ol class='recs'>" + recs.map(k => {
+    const t = M.topics[k - 1];
+    const has = !!Quiz.topics[k];
+    return `<li><b>${t.name}</b> — mastery ${pct(m[k - 1])}${labelOf(m[k - 1])}, based on ${counts[k]} of your answer${counts[k] > 1 ? "s" : ""}${counts[k] < 3 ? ' <span class="tag">little evidence</span>' : ""}${t.low_data ? ' <span class="tag">low data</span>' : ""}
+      ${has ? `<div class="note">📘 ${Quiz.topics[k].note}</div><button class="btn alt prac" data-k="${k}">Practise this topic</button>` : '<div class="note">No questions or study note for this topic in this version.</div>'}</li>`;
+  }).join("") + "</ol>" : '<p class="muted">Answer a few questions to get recommendations.</p>';
+  plan();
+  document.querySelectorAll(".prac").forEach(b => b.onclick = () => { $("quizTopic").value = b.dataset.k; newQuestion(+b.dataset.k); });
+  if (!selected && recs.length) selected = recs[0];
+  explain(res, counts);
+}
+
+function explain(res, counts) {
+  if (!selected) { $("why").innerHTML = ""; $("whatif").textContent = ""; $("whyTopic").textContent = ""; return; }
+  const k = selected, c = res.contrib[k - 1], t = M.topics[k - 1];
+  $("whyTopic").textContent = "— " + t.name;
+  const rows = FEAT.map((n, j) => [n, c.features[j]]);
+  rows.push(["How hard this topic is for students in general", c.features[6] + c.features[7] + c.topicTerm]);
+  rows.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+  const mx = Math.max(...rows.map(r => Math.abs(r[1])), 1e-9);
+  $("why").innerHTML = `<p class="muted" style="margin:0 0 6px">Pushes toward higher (blue) or lower (grey) mastery, in log-odds, <b>compared with an average answer in the training data</b> (so having fewer correct answers than average shows as negative). Exact for this linear model.</p>` +
+    rows.map(([n, v]) => `<div class="contrib"><span>${n}</span><span class="cbar"><span class="zero"></span>
+      <span class="v ${v >= 0 ? "pos" : "neg"}" style="${v >= 0 ? "left:50%" : "right:50%"};width:${50 * Math.abs(v) / mx}%"></span></span><span class="num">${v >= 0 ? "+" : ""}${fmt(v, 2)}</span></div>`).join("");
+  const now = res.mastery[k - 1];
+  const up = compute([...hist, [k, 1]]).mastery[k - 1], down = compute([...hist, [k, 0]]).mastery[k - 1];
+  $("whatif").innerHTML = `correct → ${pct(up)} (${up >= now ? "+" : ""}${Math.round(100 * (up - now))} pts) · wrong → ${pct(down)} (${Math.round(100 * (down - now))} pts) · now ${pct(now)}.<br>This is what the model expects, not a measured cause of learning.`;
+}
+
+function loadCsv() {
+  const lines = $("csv").value.split(/\r?\n/).map(s => s.trim()).filter(Boolean); const out = []; const errs = [];
+  lines.forEach((l, i) => {
+    const j = l.lastIndexOf(","); const a = l.slice(0, j).trim(), b = l.slice(j + 1).trim();
+    let k = /^\d+$/.test(a) ? +a : (M.topics.find(t => t.name.toLowerCase() === a.toLowerCase()) || {}).idx;
+    if (!k || k < 1 || k > M.n_topics || !/^[01]$/.test(b)) errs.push(i + 1); else out.push([k, +b]);
+  });
+  if (errs.length) { $("loadMsg").textContent = "Could not read line(s): " + errs.slice(0, 10).join(", "); return; }
+  hist = out; selected = null; $("loadMsg").textContent = `Loaded ${out.length} answers.`; tab("practice"); render();
+}
+
+function demo() {   // SIMULATED history (made up), only to show the interface
+  const pick = n => (M.topics.find(t => t.name === n) || M.topics[0]).idx;
+  const a = pick("Proportion"), b = pick("Equation Solving Two or Fewer Steps"), c = pick("Addition and Subtraction Fractions");
+  hist = [[a, 1], [a, 0], [a, 0], [b, 1], [b, 1], [b, 1], [c, 0], [c, 1], [a, 0], [b, 1]]; selected = null; render();
+}
+
+// ---------------- How it works (all numbers read from results.json) ----------------
+function how() {
+  const T = Object.fromEntries(R.test_summary.map(r => [r.model, r])), S = R.significance, rk = R.ranking.models, st = R.stability, dg = R.stability_diagnostic, d = R.data;
+  const lab = { majority: "Majority class", per_question: "Per-question average", logreg: "Logistic regression classifier", bkt: "BKT", dkt: "DKT (LSTM)", sakt: "SAKT",
+    qbdkt_full: "QB-DKT (ours)", qbdkt_no_calib: "QB-DKT − calibration", qbdkt_no_q: "QB-DKT − question difficulty", qbdkt_no_b: "QB-DKT − behaviour" };
+  const order = ["majority", "per_question", "logreg", "bkt", "dkt", "sakt", "qbdkt_full", "qbdkt_no_calib", "qbdkt_no_q", "qbdkt_no_b"];
+  const cols = ["auc", "accuracy", "precision", "recall", "f1", "brier"];
+  const lo = 0.65, hi = 0.78, X = v => 100 * (Math.min(Math.max(v, lo), hi) - lo) / (hi - lo);
+  const chart = ["logreg", "qbdkt_full", "qbdkt_no_b", "qbdkt_no_q", "dkt", "sakt", "bkt", "per_question"].map(m => {
+    const r = T[m], ours = m.startsWith("qbdkt");
+    return `<div class="lbl" data-m="${m}"><span>${lab[m]}</span><span class="plot">
+      <span class="b" style="left:0;width:${X(r.auc_mean)}%;background:var(${ours ? "--s1" : "--neutral"})"></span>
+      ${r.runs > 1 ? `<span class="ci" style="left:${X(r.auc_ci_low)}%;width:${Math.max(X(r.auc_ci_high) - X(r.auc_ci_low), .4)}%"></span>` : ""}</span>
+      <span class="num">${fmt(r.auc_mean, 4)}${r.runs > 1 ? " ± " + fmt(r.auc_sd, 4) : ""}</span></div>`;
+  }).join("");
+  const sigQ = S.qbdkt_vs_logreg, sigD = S.qbdkt_vs_dkt;
+  $("how").innerHTML = `
+  <div class="card"><h2>In one paragraph</h2>
+  <p>This is a <b>binary classification</b> task: for each answer, predict the class <b>correct</b> or <b>wrong</b> before the student answers. We trained classifiers on the real ASSISTments 2009–2010 maths dataset
+  (${d.clean.students.toLocaleString()} students, ${d.clean.rows.toLocaleString()} answers, ${d.clean.skills_kc} topics after cleaning), split <b>by student</b> into training, validation and test sets.
+  Our model, <b>QB-DKT</b>, extends Deep Knowledge Tracing with question difficulty and past behaviour (attempts, hints, response time).
+  It clearly beats DKT (test AUC +${fmt(sigD.auc_diff_point, 3)}, 95% CI [${fmt(sigD.ci95[0], 3)}, ${fmt(sigD.ci95[1], 3)}]) but <b>does not beat logistic regression</b>
+  (single models are lower on every seed; averaging 5 seeds gives ${sigQ.auc_diff_point >= 0 ? "+" : ""}${fmt(sigQ.auc_diff_point, 4)}, 95% CI [${fmt(sigQ.ci95[0], 4)}, ${fmt(sigQ.ci95[1], 4)}], i.e. no significant difference).
+  Its per-topic mastery also moved the wrong way too often (below). So <b>this site runs the logistic regression model</b>, which had the best test AUC and whose mastery always moves in the right direction.</p></div>
+
+  <div class="card"><h2>Test results: AUC</h2><p class="muted">Higher is better. Axis starts at ${lo}. Blue = our model and its ablations; line = 95% CI over 5 seeds. Test set: ${d.split_counts.test.students} students.</p><div class="chart" id="aucChart">${chart}</div></div>
+
+  <div class="card scroll"><h2>All test metrics (mean ± SD over seeds)</h2><table><tr><th>Model</th><th>runs</th>${cols.map(c => `<th>${c.toUpperCase()}</th>`).join("")}</tr>
+  ${order.map(m => `<tr class="${m === "qbdkt_full" ? "ours" : ""}"><td>${lab[m]}</td><td>${T[m].runs}</td>${cols.map(c => `<td>${fmt(T[m][c + "_mean"], 4)}${T[m].runs > 1 ? `<br><span class="muted">±${fmt(T[m][c + "_sd"], 4)}</span>` : ""}</td>`).join("")}</tr>`).join("")}</table>
+  <p class="muted">Accuracy, precision, recall and F1 use a 0.5 threshold on the predicted class probability; AUC and the Brier score measure how well the predicted class probabilities separate and match the true classes. Majority, per-question and logistic regression are deterministic (1 run).</p></div>
+
+  <div class="card scroll"><h2>Do the weak-topic rankings match real later performance?</h2>
+  <p class="muted">${R.ranking.n_students_used} test students. The model saw the first half of each history; we compared its topic ranking with the student's real correctness in the second half.</p>
+  <table><tr><th>Ranking from</th><th>Gap: strongest − weakest topic</th><th>95% CI</th><th>Spearman</th><th>Extra over topic difficulty alone</th></tr>
+  ${["qbdkt", "logreg", "dkt", "bkt", "topic_difficulty_only"].map(m => { const r = rk[m], x = r.gap_minus_topic_difficulty_only;
+    return `<tr><td>${{ qbdkt: "QB-DKT (ours)", logreg: "Logistic regression", dkt: "DKT", bkt: "BKT", topic_difficulty_only: "Topic difficulty only (not personal)" }[m]}</td>
+    <td>${fmt(r.gap_mean)}</td><td>[${fmt(r.gap_ci95[0])}, ${fmt(r.gap_ci95[1])}]</td><td>${fmt(r.spearman_mean)}</td><td>${x ? `${fmt(x.mean)} [${fmt(x.ci95[0])}, ${fmt(x.ci95[1])}]` : "—"}</td></tr>`; }).join("")}</table>
+  <p>Topics ranked weakest really were answered worse later, but most of this comes from topic difficulty alone; personalisation adds a small amount.</p></div>
+
+  <div class="card scroll"><h2>Is mastery sensible? One extra answer</h2>
+  <table><tr><th>Model</th><th>Mastery went up after a WRONG answer</th><th>Mastery went down after a CORRECT answer</th></tr>
+  ${["qbdkt", "dkt", "logreg", "bkt"].map(m => `<tr><td>${{ qbdkt: "QB-DKT (ours)", dkt: "DKT", logreg: "Logistic regression (used on this site)", bkt: "BKT" }[m]}</td>
+   <td>${pct(st[m].wrong_direction_after_wrong_share)}</td><td>${pct(st[m].wrong_direction_after_correct_share)}</td></tr>`).join("")}</table>
+  <p>Diagnosis: the behaviour inputs cause most of QB-DKT's wrong-way moves (with them: ${pct(dg.qbdkt.realistic.wrong_direction_after_wrong)}; without them: ${pct(dg.qbdkt_no_b.realistic.wrong_direction_after_wrong)}).
+  They raise prediction accuracy but make topic mastery unreliable.</p></div>
+
+  <div class="card"><h2>Study path: A* search</h2>
+  <p>On top of the classifier, the site plans a study path with <b>A* search</b> (AI syllabus Unit 3). Each topic is labelled <b>Mastered</b> when the classifier's chance of a correct next answer is at least the chosen threshold (default 70%), otherwise <b>Not yet</b>.</p>
+  <ul class="lim"><li><b>State:</b> how many extra questions each weak topic has received, e.g. (2, 0, 1). <b>Start:</b> (0, 0, 0). <b>Action:</b> answer one more question on one weak topic (cost g = 1 question).</li>
+  <li><b>Goal test:</b> the classifier labels every weak topic Mastered.</li>
+  <li><b>Heuristic h:</b> for each topic still Not yet, the number of questions it would need if every further question went to that topic alone; h is the largest. It never overestimates (admissible), so A* returns the shortest plan. A* expands the state with the smallest f = g + h.</li>
+  <li>Checked by tests: on 150 simulated histories A* always found the same shortest length as breadth-first search (Unit 2), while expanding no more states; the browser and Python versions agree exactly.</li>
+  <li>Planning assumption: answers in the plan are correct. Real students will need more questions; the plan is a minimum, not a promise.</li></ul></div>
+
+  <div class="card"><h2>Data</h2><div class="grid">
+   <figure style="margin:0"><img class="fig" src="img/seq_length_hist.png" alt="Histogram of answers per student"><figcaption class="muted">Answers per student (median ${d.clean.seq_len.median}).</figcaption></figure>
+   <figure style="margin:0"><img class="fig" src="img/skill_freq.png" alt="Answers per topic"><figcaption class="muted">Answers per topic — some topics are rare.</figcaption></figure>
+   <figure style="margin:0"><img class="fig" src="img/student_correct_hist.png" alt="Per-student correctness"><figcaption class="muted">Per-student share correct (overall ${pct(d.clean.share_correct)}).</figcaption></figure>
+   <figure style="margin:0"><img class="fig" src="img/response_time_hist.png" alt="Response time"><figcaption class="muted">First-response time (log scale, capped).</figcaption></figure></div></div>
+
+  <div class="card"><h2>Limitations</h2><ul class="lim">
+   <li>The practice questions and study notes were written for this project (generated by code so every answer is computed exactly). They are not taken from ASSISTments or a textbook and have not been reviewed by a teacher. They cover ${Quiz.quizTopics.length} of the ${M.n_topics} topics.</li>
+   <li>The model never saw these particular questions; it treats each one as an average question of its topic.</li>
+   <li>One dataset (ASSISTments 2009–2010, US middle-school maths); results may not transfer to other courses or students.</li>
+   <li>Offline data only: we cannot show that following a recommendation improves learning. "What if" numbers are model expectations, not causes.</li>
+   <li>Our deep model (QB-DKT) did not beat logistic regression, and its mastery moved the wrong way too often; the site therefore uses logistic regression.</li>
+   <li>Most of the ranking quality comes from topic difficulty, not personalisation.</li>
+   <li>Rare topics (fewer than 100 training answers) and topics with few of your own answers give unreliable mastery; they are flagged.</li>
+   <li>Calibration (temperature scaling) did not meaningfully help (Brier change ${fmt(T.qbdkt_no_calib.brier_mean - T.qbdkt_full.brier_mean, 4)}).</li>
+   <li>Combined topics (questions tagged with several skills) are treated as one topic. ${M.topics.filter(t => /no name|unnamed/.test(t.name)).length} of the ${M.n_topics} topics have a skill with no name in the dataset; they are listed last and shown by number.</li>
+   <li>Training ran on a laptop CPU, which limited the hyper-parameter search.</li>
+   <li>The A* study path assumes every planned answer is correct, uses at most the 4 weakest practised topics and 30 questions, and has not been tested with real students.</li></ul></div>`;
+  document.querySelectorAll("#aucChart .lbl").forEach(el => {
+    const r = T[el.dataset.m];
+    el.onmousemove = e => showTip(e, `<b>${lab[el.dataset.m]}</b><br>AUC ${fmt(r.auc_mean, 4)}${r.runs > 1 ? `<br>95% CI [${fmt(r.auc_ci_low, 4)}, ${fmt(r.auc_ci_high, 4)}]<br>${r.runs} seeds` : "<br>deterministic, 1 run"}`);
+    el.onmouseleave = hideTip;
+  });
+}
+
+Promise.all([fetch("model.json").then(r => r.json()), fetch("results.json").then(r => r.json())]).then(([m, r]) => {
+  M = m; R = r; $("nTopics").textContent = M.n_topics; quizOptions(); newQuestion(); how();
+  $("btnNewQ").onclick = () => newQuestion(); $("quizTopic").onchange = () => newQuestion();
+  $("btnUndo").onclick = () => { hist.pop(); render(); }; $("btnReset").onclick = () => { hist = []; selected = null; newQuestion(); };
+  $("btnDemo").onclick = demo; $("btnLoad").onclick = loadCsv; $("showAll").onchange = render; $("theta").onchange = render;
+}).catch(e => { document.querySelector("main").innerHTML = `<div class="card">Could not load the model files (${e}). If you opened this file directly, run a local server: <code>python -m http.server</code> in the web folder.</div>`; });
+</script>
+</body>
+</html>
